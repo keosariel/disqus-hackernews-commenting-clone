@@ -1,0 +1,28 @@
+<div class="comment" style="margin-left: {{ depth * 0.8 }}rem" id="post_{{post.id}}">
+	<hr>
+	{% set has_voted = False %}
+	{% set replies = post.get_replies() %}
+	{% if current_author %}
+		{% set has_voted = post.has_voted(current_author.id) %}
+	{% endif %}
+	<div class="content">
+		<button style="display: {{'none' if has_voted else 'inline-block'}}" data-id="{{ post.id }}" onclick="vote_post(this)" id="vote_{{post.id}}"></button>
+		<button class="up" style="display: {{'none' if not has_voted else 'inline-block'}}" data-id="{{ post.id }}" onclick="unvote_post(this)" id="unvote_{{post.id}}"></button>
+		<div style="overflow-x: auto;">{{post.content_html() | safe }}</div>
+		<div class="meta">
+			<span class="date">{{post.created_at}}</span> - <button class="meta_btn" onclick="toggle('reply_{{post.id}}')">reply</button> - <button class="meta_btn" onclick="delete_comment('{{post.id}}')">delete</button>
+		</div>
+	</div>
+	<div id="reply_{{post.id}}" class="reply" style="display: none">
+		<form id="comment_form" class="comment_form" method="post" style="margin-top: 10px;" onsubmit="return add_comment({{post.id}}, {{ depth+1 }})">
+			<textarea id="comment[content_{{post.id}}]" placeholder="Add reply Anonymously"></textarea>
+			<input type="text" id="comment[parent_id_{{post.id}}]" value="{{post.id}}" style="display: none;">
+			<button type="submit">add reply</button>
+		</form>
+	</div>
+	<div id="replies_for_{{post.id}}">
+		{% for reply in replies %}
+			{{ render_post(reply, current_author, depth=depth+1) | safe }}
+		{% endfor %}
+	</div>
+</div>
